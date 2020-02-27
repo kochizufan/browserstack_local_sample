@@ -8,7 +8,9 @@ const bsKey = process.env.BS_KEY;
 const jsonServer = require('json-server');
 const server = jsonServer.create();
 const router = jsonServer.router('db.json');
-const middlewares = jsonServer.defaults();
+const middlewares = jsonServer.defaults({
+  static: '.'
+});
 
 server.use(middlewares);
 server.use(router);
@@ -30,6 +32,28 @@ if (proxyPort !== '') {
     bs_local_args.proxyPort = proxyPort;
 }
 
+const targets = {
+  'ie11' : {
+    'browserName' : 'IE',
+    'browser_version' : '11.0',
+    'os' : 'Windows',
+    'os_version' : '10',
+    'resolution' : '1024x768'
+  },
+  'iOS11' : {
+    'browserName': 'iPhone',
+    'device': 'iPhone 8 Plus',
+    'realMobile': 'true',
+    'os_version': '11'
+  },
+  'Android10' : {
+    'browserName' : 'android',
+    'device' : 'Google Pixel 4 XL',
+    'realMobile' : 'true',
+    'os_version' : '10.0'
+  }
+}
+
 async function run() {
   // starts the Local instance with the required arguments
   await new Promise((resolve) => {
@@ -37,34 +61,32 @@ async function run() {
       resolve();
     });
   });
-  // Input capabilities
-  const capabilities = {
-    'browserName' : 'IE',
-    'browser_version' : '11.0',
-    'os' : 'Windows',
-    'os_version' : '10',
-    'resolution' : '1024x768',
-    'browserstack.user' : bsUser,
-    'browserstack.key' : bsKey,
-    'browserstack.local' : 'true',
-    'name' : 'Bstack-[Node] :Sample Test'
-  };
-  let driver = new webdriver.Builder().
+  Object.keys(targets).map((key) => {
+    // Input capabilities
+    let capabilities = {
+      'browserstack.user' : bsUser,
+      'browserstack.key' : bsKey,
+      'browserstack.local' : 'true',
+      'name' : `Bstack-[Node] : Sample Test ${key}`
+    };
+    capabilities = Object.assign(capabilities, targets[key]);
+    let driver = new webdriver.Builder().
     usingServer('http://hub-cloud.browserstack.com/wd/hub').
     withCapabilities(capabilities);
-  if (proxyHost !== '') {
-    let proxy = `http://${proxyHost}`;
-    if (proxyPort !== '') {
-      proxy = `${proxy}:${proxyPort}`;
+    if (proxyHost !== '') {
+      let proxy = `http://${proxyHost}`;
+      if (proxyPort !== '') {
+        proxy = `${proxy}:${proxyPort}`;
+      }
+      driver = driver.usingWebDriverProxy(proxy);
     }
-    driver = driver.usingWebDriverProxy(proxy);
-  }
-  driver = driver.build();
+    driver = driver.build();
 
-  driver.get('http://localhost:3000/').then(() => {
-    driver.getTitle().then((title) => {
-      console.log(title);
-      driver.quit();
+    driver.get('http://localhost:3000/index.html').then(() => {
+      driver.getTitle().then((title) => {
+        console.log(title);
+        driver.quit();
+      });
     });
   });
 }
