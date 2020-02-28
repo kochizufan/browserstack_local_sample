@@ -1,5 +1,6 @@
 const webdriver = require('selenium-webdriver');
 const browserstack = require('browserstack-local');
+const ip = require('ip');
 require('dot-env');
 const proxyHost = process.env.PROXY_HOST;
 const proxyPort = process.env.PROXY_PORT;
@@ -82,7 +83,7 @@ async function run() {
     }
     driver = driver.build();
 
-    driver.get('http://localhost:3000/index.html').then(() => {
+    driver.get(`http://${ip.address()}:3000/index.html`).then(() => {
       driver.getTitle().then((title) => {
         console.log(title);
         driver.quit();
