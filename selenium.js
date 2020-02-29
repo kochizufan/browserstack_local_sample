@@ -1,4 +1,5 @@
 const webdriver = require('selenium-webdriver');
+const By = webdriver.By;
 const browserstack = require('browserstack-local');
 const ip = require('ip');
 require('dot-env');
@@ -34,7 +35,7 @@ if (proxyPort !== '') {
 }
 
 const targets = {
-  'ie11' : {
+  'IE11' : {
     'browserName' : 'IE',
     'browser_version' : '11.0',
     'os' : 'Windows',
@@ -62,7 +63,7 @@ async function run() {
       resolve();
     });
   });
-  Object.keys(targets).map((key) => {
+  Object.keys(targets).map(async (key) => {
     // Input capabilities
     let capabilities = {
       'browserstack.user' : bsUser,
@@ -83,12 +84,16 @@ async function run() {
     }
     driver = driver.build();
 
-    driver.get(`http://${ip.address()}:3000/index.html`).then(() => {
-      driver.getTitle().then((title) => {
-        console.log(title);
-        driver.quit();
-      });
-    });
+    await driver.get(`http://${ip.address()}:3000/index_packed.html?appid=tatebayashi`);
+    await driver.sleep(10000);
+    const title = await driver.getTitle();
+    console.log(title);
+    const maplat = driver.findElement(By.className('maplat'));
+    await driver.actions({bridge: true}).
+      dragAndDrop(maplat, {x: 100, y: 100}).
+      perform();
+    await driver.sleep(10000);
+    driver.quit();
   });
 }
 
