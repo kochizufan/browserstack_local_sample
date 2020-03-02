@@ -88,10 +88,23 @@ async function run() {
     await driver.sleep(10000);
     const title = await driver.getTitle();
     console.log(title);
-    const maplat = driver.findElement(By.className('maplat'));
+    const maplat = driver.findElement(By.className('ol-border'));
     await driver.actions({bridge: true}).
-      dragAndDrop(maplat, {x: 100, y: 100}).
-      perform();
+      click(maplat).perform();
+      /*move({
+        origin: maplat
+      }).
+      press().
+      pause(1000).
+      move({
+        x: 100,
+        y: 100
+      }).
+      release().
+      perform();*/
+      //  .longPress(elem1).waitAction(3000).moveTo(elem2).perform().release();
+      //dragAndDrop(maplat, {x: 100, y: 100}).
+      //perform();
     await driver.sleep(10000);
     driver.quit();
   });
